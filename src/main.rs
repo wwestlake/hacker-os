@@ -14,6 +14,18 @@ use hacker_os::println;
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
 
+    hacker_os::interrupts::init_idt();
+
+    fn stack_overflow() {
+        stack_overflow(); // for each recursion, the return address is pushed
+    }
+
+    // trigger a stack overflow
+    stack_overflow();
+
+
+    println!("It did not crash!");
+
     loop {}
 }
 
