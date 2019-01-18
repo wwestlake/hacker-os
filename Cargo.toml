@@ -1,0 +1,13 @@
+[package]
+name = "hacker-os"
+version = "0.1.0"
+authors = ["wwestlake"]
+edition = "2018"
+
+[package.metadata.bootimage]
+default-target = "x86_64-hacker-os.json"
+
+
+[dependencies]
+bootloader = "0.3.12"
+
