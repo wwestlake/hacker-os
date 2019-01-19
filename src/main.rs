@@ -12,21 +12,28 @@ use hacker_os::println;
 #[cfg(not(test))]
 #[no_mangle] // don't mangle the name of this function
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
+ 
+    use x86_64::structures::paging::PageTable;
 
-    hacker_os::interrupts::init_idt();
-
-    fn stack_overflow() {
-        stack_overflow(); // for each recursion, the return address is pushed
+    let level_4_table_ptr = 0xffff_ffff_ffff_f000 as *const PageTable;
+    let level_4_table = unsafe {&*level_4_table_ptr};
+    for i in 0..10 {
+        println!("Entry {}: {:?}", i, level_4_table[i]);
     }
 
-    // trigger a stack overflow
-    stack_overflow();
+ 
+    println!("Hello World{}", "!");
 
+    hacker_os::gdt::init();
+    hacker_os::interrupts::init_idt();
+    unsafe { hacker_os::interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();  
 
+ 
     println!("It did not crash!");
 
-    loop {}
+    hacker_os::hlt_loop();
+
 }
 
 /// This function is called on panic.
@@ -34,5 +41,5 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    hacker_os::hlt_loop();
 }
